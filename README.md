@@ -11,12 +11,12 @@ RNN-based lyric generation conditioned on melody (MIDI), with two melody-integra
 3) Main deps: PyTorch, gensim, pandas, pretty-midi, tensorboard.
 
 ## Data (kept out of git)
-- MIDI: `/home/amit/Downloads/Archive/midi_files/` (625 files)
-- Lyrics CSV:
-  - Train: `/home/amit/Downloads/Archive/lyrics_train_set.csv`
-  - Test: `/home/amit/Downloads/Archive/lyrics_test_set.csv`
+- Place the MIDI folder and lyrics CSVs locally (not tracked in git). Update CLI paths accordingly.
+- Expected inputs:
+  - MIDI folder (e.g., `.../midi_files/`, ~625 files)
+  - Lyrics CSVs: train and test (e.g., `.../lyrics_train_set.csv`, `.../lyrics_test_set.csv`)
 
-MIDI files are matched by normalized `artist + title`. Ensure these paths exist locally before running.
+MIDI files are matched by normalized `artist + title`. Make sure your local paths are correct when running the commands.
 
 ## Training
 Static variant (one melody summary vector concatenated to every token):
