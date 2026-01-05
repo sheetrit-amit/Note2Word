@@ -100,10 +100,11 @@ def main():
     parser.add_argument("--midi_dir", type=Path, required=True)
     parser.add_argument("--variant", choices=["static", "temporal"], default="static")
     parser.add_argument("--bucket_seconds", type=float, default=2.0)
-    parser.add_argument("--min_freq", type=int, default=2)
+    parser.add_argument("--min_freq", type=int, default=1)
     parser.add_argument("--embedding_dim", type=int, default=300)
     parser.add_argument("--hidden_dim", type=int, default=256)
     parser.add_argument("--num_layers", type=int, default=1)
+    parser.add_argument("--dropout", type=float, default=0.1)
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -132,6 +133,7 @@ def main():
             melody_dim=melody_dim_static,
             hidden_dim=args.hidden_dim,
             num_layers=args.num_layers,
+            dropout=args.dropout,
         )
     else:
         melody_dim_temporal = 12 + 2
@@ -141,6 +143,7 @@ def main():
             melody_dim=melody_dim_temporal,
             hidden_dim=args.hidden_dim,
             num_layers=args.num_layers,
+            dropout=args.dropout,
         )
 
     model.to(device)

@@ -5,7 +5,15 @@ import torch.nn as nn
 
 
 class TextMelodyRNNStatic(nn.Module):
-    def __init__(self, vocab_size: int, embed_dim: int, melody_dim: int, hidden_dim: int, num_layers: int = 1):
+    def __init__(
+        self,
+        vocab_size: int,
+        embed_dim: int,
+        melody_dim: int,
+        hidden_dim: int,
+        num_layers: int = 1,
+        dropout: float = 0.1,
+    ):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0)
         self.rnn = nn.GRU(
@@ -13,7 +21,9 @@ class TextMelodyRNNStatic(nn.Module):
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
+            dropout=dropout if num_layers > 1 else 0.0,
         )
+        self.dropout = nn.Dropout(dropout)
         self.fc = nn.Linear(hidden_dim, vocab_size)
 
     def forward(self, tokens: torch.Tensor, melody_static: torch.Tensor):
@@ -21,12 +31,20 @@ class TextMelodyRNNStatic(nn.Module):
         melody = melody_static.unsqueeze(1).expand(-1, x.size(1), -1)
         x = torch.cat([x, melody], dim=-1)
         out, _ = self.rnn(x)
-        logits = self.fc(out)
+        logits = self.fc(self.dropout(out))
         return logits
 
 
 class TextMelodyRNNTemporal(nn.Module):
-    def __init__(self, vocab_size: int, embed_dim: int, melody_dim: int, hidden_dim: int, num_layers: int = 1):
+    def __init__(
+        self,
+        vocab_size: int,
+        embed_dim: int,
+        melody_dim: int,
+        hidden_dim: int,
+        num_layers: int = 1,
+        dropout: float = 0.1,
+    ):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim, padding_idx=0)
         self.rnn = nn.GRU(
@@ -34,7 +52,9 @@ class TextMelodyRNNTemporal(nn.Module):
             hidden_size=hidden_dim,
             num_layers=num_layers,
             batch_first=True,
+            dropout=dropout if num_layers > 1 else 0.0,
         )
+        self.dropout = nn.Dropout(dropout)
         self.fc = nn.Linear(hidden_dim, vocab_size)
 
     def forward(self, tokens: torch.Tensor, melody_seq: torch.Tensor):
@@ -45,7 +65,7 @@ class TextMelodyRNNTemporal(nn.Module):
             melody = torch.cat([melody, pad], dim=1)
         x = torch.cat([x, melody], dim=-1)
         out, _ = self.rnn(x)
-        logits = self.fc(out)
+        logits = self.fc(self.dropout(out))
         return logits
 
 

@@ -9,6 +9,7 @@ RNN-based lyric generation conditioned on melody (MIDI), with two melody-integra
    `PIP_INDEX_URL=https://pypi.org/simple pip install -r requirements.txt`  
    Optional: `python -m pip install --upgrade pip`
 3) Main deps: PyTorch, gensim, pandas, pretty-midi, tensorboard.
+   - SciPy/Numpy pinned for gensim compatibility: `scipy==1.11.4`, `numpy==1.26.4`.
 
 ## Data (kept out of git)
 - Place the MIDI folder and lyrics CSVs locally (not tracked in git). Update CLI paths accordingly.
@@ -69,9 +70,9 @@ Temporal variant: swap to `temporal_best.pt`.
    `tensorboard --logdir runs`
 6) Generate (after training):  
    - Static:  
-     `python src/generate.py --ckpt checkpoints/static_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --output generated_static.json`
+     `python src/generate.py --ckpt checkpoints/static_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --temperature 0.9 --top_k 8 --output generated_static.json`
    - Temporal:  
-     `python src/generate.py --ckpt checkpoints/temporal_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --output generated_temporal.json`
+     `python src/generate.py --ckpt checkpoints/temporal_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --temperature 0.9 --top_k 8 --output generated_temporal.json`
 7) Compare: check TensorBoard losses and generated JSONs for qualitative comparison.
 
 ## Code map
@@ -83,4 +84,5 @@ Temporal variant: swap to `temporal_best.pt`.
 ## Notes
 - If pip points to CodeArtifact and returns 401, use `PIP_INDEX_URL=https://pypi.org/simple` or remove the index override from pip.conf/env.
 - Data is not in git; place it at the paths above or adjust the CLI args accordingly.
+- Generation quality tips: increase epochs, adjust `--temperature`/`--top_k`, and consider higher `--hidden_dim` or `--num_layers>1` with `--dropout` to reduce repetition/unk tokens.
 

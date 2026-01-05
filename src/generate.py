@@ -79,6 +79,8 @@ def generate_for_record(
     max_len: int,
     bucket_seconds: float,
     device: torch.device,
+    temperature: float,
+    top_k: int,
 ):
     midi_path = match_midi_path(record["artist"], record["title"], midi_index)
     if not midi_path:
@@ -103,7 +105,7 @@ def generate_for_record(
                 melody_seq = torch.tensor(aligned, dtype=torch.float32, device=device).unsqueeze(0)
                 logits = model(token_tensor, melody_seq)
             probs = torch.softmax(logits[0, -1], dim=-1)
-            next_id = sample_next(probs, temperature=1.0, top_k=10)
+            next_id = sample_next(probs, temperature=temperature, top_k=top_k)
             tokens.append(next_id)
     return decode_tokens(tokens, itos)
 
@@ -116,6 +118,8 @@ def main():
     parser.add_argument("--start_word", type=str, default="hello")
     parser.add_argument("--max_len", type=int, default=50)
     parser.add_argument("--bucket_seconds", type=float, default=2.0)
+    parser.add_argument("--temperature", type=float, default=0.9)
+    parser.add_argument("--top_k", type=int, default=8)
     parser.add_argument("--output", type=Path, default=Path("generated.json"))
     args = parser.parse_args()
 
@@ -136,6 +140,8 @@ def main():
             max_len=args.max_len,
             bucket_seconds=args.bucket_seconds,
             device=device,
+            temperature=args.temperature,
+            top_k=args.top_k,
         )
         if text:
             outputs.append(
