@@ -48,6 +48,7 @@ python src/generate.py \
   --midi_dir /home/amit/Downloads/Archive/midi_files \
   --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv \
   --start_word hello --max_len 50 \
+  --target_len 50 --max_words_per_line 8 --max_lines 6 \
   --output generated_static.json
 ```
 Temporal variant: swap to `temporal_best.pt`.
@@ -70,9 +71,9 @@ Temporal variant: swap to `temporal_best.pt`.
    `tensorboard --logdir runs`
 6) Generate (after training):  
    - Static:  
-     `python src/generate.py --ckpt checkpoints/static_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --temperature 0.9 --top_k 8 --output generated_static.json`
+     `python src/generate.py --ckpt checkpoints/static_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --target_len 50 --max_words_per_line 8 --max_lines 6 --temperature 0.9 --top_k 8 --output generated_static.json`
    - Temporal:  
-     `python src/generate.py --ckpt checkpoints/temporal_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --temperature 0.9 --top_k 8 --output generated_temporal.json`
+     `python src/generate.py --ckpt checkpoints/temporal_best.pt --midi_dir /home/amit/Downloads/Archive/midi_files --test_csv /home/amit/Downloads/Archive/lyrics_test_set.csv --start_word hello --max_len 50 --target_len 50 --max_words_per_line 8 --max_lines 6 --temperature 0.9 --top_k 8 --output generated_temporal.json`
 7) Compare: check TensorBoard losses and generated JSONs for qualitative comparison.
 
 ## Code map

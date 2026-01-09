@@ -173,7 +173,11 @@ class LyricsMelodyDataset(Dataset):
             midi_path = match_midi_path(artist, title, midi_index)
             if not midi_path:
                 continue
-            pm = pretty_midi.PrettyMIDI(midi_path)
+            try:
+                pm = pretty_midi.PrettyMIDI(midi_path)
+            except Exception:
+                # Skip malformed MIDI files that pretty_midi/mido cannot parse
+                continue
             static_feat = static_melody_features(pm).astype(np.float32)
             temporal = time_bucket_features(pm, bucket_seconds=bucket_seconds)
 
