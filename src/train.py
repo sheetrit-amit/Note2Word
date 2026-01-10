@@ -17,7 +17,7 @@ from data import (
     build_vocab,
     collate_batch,
     load_lyrics_csv,
-    train_word2vec,
+    load_pretrained_embeddings,
 )
 from models import TextMelodyRNNStatic, TextMelodyRNNTemporal, init_with_embeddings
 
@@ -110,14 +110,20 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--log_dir", type=Path, default=Path("runs"))
     parser.add_argument("--checkpoint_dir", type=Path, default=Path("checkpoints"))
+    parser.add_argument(
+        "--glove_path",
+        type=Path,
+        default=Path("glove.6B.300d.txt"),
+        help="Path to pretrained GloVe 300d embeddings (downloaded separately)",
+    )
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     records = load_lyrics_csv(args.train_csv)
     stoi, itos = build_vocab(records, min_freq=args.min_freq)
-    w2v = train_word2vec(records, vector_size=args.embedding_dim, min_count=1)
-    embedding_matrix = build_embedding_matrix(w2v, stoi)
+    pretrained = load_pretrained_embeddings(args.glove_path, expected_dim=args.embedding_dim)
+    embedding_matrix = build_embedding_matrix(pretrained, stoi, embedding_dim=args.embedding_dim)
 
     midi_index = build_midi_index(args.midi_dir)
     train_loader, val_loader = make_dataloaders(

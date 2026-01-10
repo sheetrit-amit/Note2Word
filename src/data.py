@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import pretty_midi
 import torch
-from gensim.models import Word2Vec
 from torch.utils.data import Dataset
 
 
@@ -61,25 +60,41 @@ def build_vocab(records: Sequence[Dict[str, str]], min_freq: int = 2) -> Tuple[D
     return stoi, itos
 
 
-def train_word2vec(records: Sequence[Dict[str, str]], vector_size: int = 300, min_count: int = 1) -> Word2Vec:
-    sentences = [simple_tokenize(r["lyrics"]) for r in records]
-    model = Word2Vec(
-        sentences=sentences,
-        vector_size=vector_size,
-        window=5,
-        min_count=min_count,
-        workers=4,
-        sg=1,
-    )
-    return model
+def load_pretrained_embeddings(path: Path, expected_dim: int = 300) -> Dict[str, np.ndarray]:
+    """
+    Load GloVe-style pretrained embeddings from a text file.
+
+    Each line: <token> <v1> <v2> ... <vN>
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"Pretrained embeddings not found at {path}")
+
+    embeddings: Dict[str, np.ndarray] = {}
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            parts = line.rstrip().split(" ")
+            if len(parts) < expected_dim + 1:
+                continue
+            word = parts[0]
+            vec = np.asarray(parts[1:], dtype=np.float32)
+            if vec.shape[0] != expected_dim:
+                # skip rows with unexpected dimensionality
+                continue
+            embeddings[word] = vec
+    if not embeddings:
+        raise ValueError(f"No embeddings loaded from {path}")
+    return embeddings
 
 
-def build_embedding_matrix(model: Word2Vec, stoi: Dict[str, int]) -> np.ndarray:
-    vector_size = model.vector_size
-    matrix = np.random.normal(0, 0.1, size=(len(stoi), vector_size))
+def build_embedding_matrix(embeddings: Dict[str, np.ndarray], stoi: Dict[str, int], embedding_dim: int) -> np.ndarray:
+    matrix = np.random.normal(0, 0.1, size=(len(stoi), embedding_dim)).astype(np.float32)
+    # PAD explicitly zeroed
+    if PAD_TOKEN in stoi:
+        matrix[stoi[PAD_TOKEN]] = 0.0
     for token, idx in stoi.items():
-        if token in model.wv:
-            matrix[idx] = model.wv[token]
+        vec = embeddings.get(token)
+        if vec is not None and vec.shape[0] == embedding_dim:
+            matrix[idx] = vec
     return matrix
 
 
